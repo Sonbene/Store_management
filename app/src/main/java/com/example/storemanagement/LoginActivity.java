@@ -52,7 +52,7 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    // Hàm kiểm tra đăng nhập từ MariaDB
+    // Hàm kiểm tra đăng nhập từ MariaDB và lấy thông tin admin nếu đăng nhập là admin
     private void login(final String username, final String password) {
         executorService.execute(new Runnable() {
             @Override
@@ -72,14 +72,18 @@ public class LoginActivity extends AppCompatActivity {
                     rs = stmt.executeQuery();
 
                     if (rs.next()) {
-                        // Nếu tài khoản tồn tại, kiểm tra nếu là admin hay user
-                        if ("admin".equalsIgnoreCase(username)) {
+                        // Lấy thông tin từ cơ sở dữ liệu
+                        String dbUserName = rs.getString("UserName");
+                        String dbEmail = rs.getString("Email");
+                        if ("admin".equalsIgnoreCase(dbUserName)) {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     Toast.makeText(LoginActivity.this, "Đăng nhập admin thành công", Toast.LENGTH_SHORT).show();
-                                    // Chuyển sang AdminActivity
+                                    // Chuyển sang AdminActivity và truyền thông tin admin qua Intent extras
                                     Intent intent = new Intent(LoginActivity.this, AdminActivity.class);
+                                    intent.putExtra("adminName", dbUserName);
+                                    intent.putExtra("adminEmail", dbEmail);
                                     startActivity(intent);
                                     finish();
                                 }

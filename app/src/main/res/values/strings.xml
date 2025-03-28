@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Store Management</string>
+    <string name="app_name">StoreManagement</string>
+    <string name="navigation_drawer_open">Mở Menu</string>
+    <string name="navigation_drawer_close">Đóng Menu</string>
 </resources>

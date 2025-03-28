@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_admin_home"
+        android:title="Home" />
+    <item
+        android:id="@+id/nav_manage_products"
+        android:title="Quản lý sản phẩm" />
+    <item
+        android:id="@+id/nav_inventory_management"
+        android:title="Quản lý tồn kho" />
+    <item
+        android:id="@+id/nav_in_out_stock"
+        android:title="Nhập/Xuất kho" />
+    <item
+        android:id="@+id/nav_reports"
+        android:title="Báo cáo thống kê" />
+    <item
+        android:id="@+id/nav_user_management"
+        android:title="Quản lý người dùng" />
+    <item
+        android:id="@+id/nav_user_logout"
+        android:title="Đăng xuất" />
+
+</menu>

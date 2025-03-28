@@ -1,124 +1,105 @@
 package com.example.storemanagement;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-public class AdminActivity extends AppCompatActivity {
-    private EditText etUserName, etPassWord, etPhone, etEmail, etIDRole;
-    private Button btnPushData;
+import com.google.android.material.navigation.NavigationView;
 
-    // ExecutorService để thực hiện tác vụ DB ở background
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+public class AdminActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    // Cấu hình kết nối MariaDB (điều chỉnh theo cấu hình của bạn)
-    private static final String DB_URL = "jdbc:mysql://pvl.vn:3306/admin_db";
-    private static final String DB_USER = "raspberry";
-    private static final String DB_PASSWORD = "admin6789@";
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    private Toolbar toolbar;
+    private String adminName, adminEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Hiển thị giao diện admin (admin_layout.xml)
         setContentView(R.layout.admin_layout);
-        etUserName = findViewById(R.id.etUserName);
-        etPassWord = findViewById(R.id.etPassWord);
-        etPhone    = findViewById(R.id.etPhone);
-        etEmail    = findViewById(R.id.etEmail);
-        etIDRole   = findViewById(R.id.etIDRole);
-        btnPushData = findViewById(R.id.btnPushData);
 
-        btnPushData.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                pushDataToDB();
-            }
-        });
-    }
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-    // Hàm đẩy dữ liệu từ giao diện admin lên MariaDB
-    private void pushDataToDB() {
-        final String userName = etUserName.getText().toString().trim();
-        final String passWord = etPassWord.getText().toString().trim();
-        final String phone = etPhone.getText().toString().trim();
-        final String email = etEmail.getText().toString().trim();
-        final String idRole = etIDRole.getText().toString().trim();
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.navigation_view);
 
-        if (userName.isEmpty() || passWord.isEmpty() || phone.isEmpty() || email.isEmpty() || idRole.isEmpty()) {
-            Toast.makeText(AdminActivity.this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
-            return;
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        navigationView.setNavigationItemSelectedListener(this);
+
+        // Lấy thông tin admin từ Intent extras (được truyền từ LoginActivity)
+        Intent intent = getIntent();
+        adminName = intent.getStringExtra("adminName");
+        adminEmail = intent.getStringExtra("adminEmail");
+        if (adminName == null) {
+            adminName = "Admin Name";
+        }
+        if (adminEmail == null) {
+            adminEmail = "admin@example.com";
         }
 
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                Connection connection = null;
-                PreparedStatement stmt = null;
-                try {
-                    Class.forName("com.mysql.jdbc.Driver");
-                    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-
-                    String sql = "INSERT INTO quanlykho_users (UserName, PassWord, Phone, Email, IDRole) VALUES (?, ?, ?, ?, ?)";
-                    stmt = connection.prepareStatement(sql);
-                    stmt.setString(1, userName);
-                    stmt.setString(2, passWord);
-                    stmt.setString(3, phone);
-                    stmt.setString(4, email);
-                    stmt.setString(5, idRole);
-
-                    final int rowsInserted = stmt.executeUpdate();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (rowsInserted > 0) {
-                                Toast.makeText(AdminActivity.this, "Dữ liệu đã được đẩy lên thành công!", Toast.LENGTH_SHORT).show();
-                                clearFields();
-                            } else {
-                                Toast.makeText(AdminActivity.this, "Đẩy dữ liệu thất bại!", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-                } catch (final Exception e) {
-                    Log.e("PushDataError", "Lỗi đẩy dữ liệu", e);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(AdminActivity.this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } finally {
-                    try {
-                        if (stmt != null) stmt.close();
-                        if (connection != null) connection.close();
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
-        });
-    }
-
-    private void clearFields() {
-        etUserName.setText("");
-        etPassWord.setText("");
-        etPhone.setText("");
-        etEmail.setText("");
-        etIDRole.setText("");
+        // Lấy header view của NavigationView và cập nhật thông tin admin
+        View headerView = navigationView.getHeaderView(0);
+        TextView tvAdminName = headerView.findViewById(R.id.tvAdminName);
+        TextView tvAdminEmail = headerView.findViewById(R.id.tvAdminEmail);
+        tvAdminName.setText(adminName);
+        tvAdminEmail.setText(adminEmail);
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        executorService.shutdown();
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.nav_admin_home) {
+            Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(AdminActivity.this, AdminActivity.class);
+            intent.putExtra("adminName", adminName);
+            intent.putExtra("adminEmail", adminEmail);
+            startActivity(intent);
+            // Xử lý chức năng quản lý sản phẩm
+        } else if (id == R.id.nav_manage_products) {
+            Toast.makeText(this, "Quản lý sản phẩm", Toast.LENGTH_SHORT).show();
+            // Xử lý chức năng quản lý sản phẩm
+        } else if (id == R.id.nav_inventory_management) {
+            Toast.makeText(this, "Quản lý tồn kho", Toast.LENGTH_SHORT).show();
+            // Xử lý chức năng quản lý tồn kho
+        } else if (id == R.id.nav_in_out_stock) {
+            Toast.makeText(this, "Nhập/Xuất kho", Toast.LENGTH_SHORT).show();
+            // Xử lý chức năng nhập/xuất kho
+        } else if (id == R.id.nav_reports) {
+            Toast.makeText(this, "Báo cáo thống kê", Toast.LENGTH_SHORT).show();
+            // Xử lý chức năng báo cáo thống kê
+        } else if (id == R.id.nav_user_management) {
+            Toast.makeText(this, "Quản lý người dùng", Toast.LENGTH_SHORT).show();
+            // Chuyển sang giao diện quản lý người dùng và truyền thông tin admin
+            Intent intent = new Intent(AdminActivity.this, UserManagementActivity.class);
+            intent.putExtra("adminName", adminName);
+            intent.putExtra("adminEmail", adminEmail);
+            startActivity(intent);
+        } else if (id == R.id.nav_user_logout) {
+            Toast.makeText(this, "Đã đăng xuất", Toast.LENGTH_SHORT).show();
+            // Chuyển sang giao diện quản lý người dùng và truyền thông tin admin
+            Intent intent = new Intent(AdminActivity.this, LoginActivity.class);
+            intent.putExtra("adminName", adminName);
+            intent.putExtra("adminEmail", adminEmail);
+            startActivity(intent);
+        }
+        drawerLayout.closeDrawers();
+        return true;
     }
 }
