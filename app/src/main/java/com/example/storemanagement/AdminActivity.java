@@ -66,7 +66,6 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         int id = item.getItemId();
         if (id == R.id.nav_admin_home) {
             Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
-            Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(AdminActivity.this, AdminActivity.class);
             intent.putExtra("adminName", adminName);
             intent.putExtra("adminEmail", adminEmail);
@@ -77,10 +76,15 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
             // Xử lý chức năng quản lý sản phẩm
         } else if (id == R.id.nav_inventory_management) {
             Toast.makeText(this, "Quản lý tồn kho", Toast.LENGTH_SHORT).show();
+
             // Xử lý chức năng quản lý tồn kho
         } else if (id == R.id.nav_in_out_stock) {
             Toast.makeText(this, "Nhập/Xuất kho", Toast.LENGTH_SHORT).show();
             // Xử lý chức năng nhập/xuất kho
+            Intent intent = new Intent(AdminActivity.this, InventoryManagementActivity.class);
+            intent.putExtra("adminName", adminName);
+            intent.putExtra("adminEmail", adminEmail);
+            startActivity(intent);
         } else if (id == R.id.nav_reports) {
             Toast.makeText(this, "Báo cáo thống kê", Toast.LENGTH_SHORT).show();
             // Xử lý chức năng báo cáo thống kê

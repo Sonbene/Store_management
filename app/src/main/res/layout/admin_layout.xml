@@ -12,15 +12,16 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Toolbar hiển thị tiêu đề và nút hamburger -->
+        <!-- Toolbar với tiêu đề, có background gradient (hoặc drawable) -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="@drawable/toolbar_background"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             app:title="Store Management"
-            app:titleTextColor="@android:color/white" />
+            app:titleTextColor="@android:color/white"
+            app:navigationIcon="@drawable/ic_menu" />
 
         <!-- Khung chứa nội dung chính -->
         <FrameLayout
@@ -28,29 +29,141 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <!-- Nội dung mặc định: ví dụ hiển thị lời chào và logo -->
-            <LinearLayout
+            <!-- Nội dung mặc định: hiển thị lời chào, logo và một số thông tin thống kê -->
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:padding="16dp">
-
-                <ImageView
-                    android:id="@+id/ivLogo"
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
-                    android:src="@mipmap/ic_launcher"
-                    android:contentDescription="Logo" />
-
-                <TextView
-                    android:id="@+id/tvWelcome"
-                    android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Chào mừng Admin!"
-                    android:textSize="20sp"
-                    android:layout_marginTop="16dp" />
-            </LinearLayout>
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:padding="16dp">
+
+                    <!-- Logo -->
+                    <ImageView
+                        android:id="@+id/ivLogo"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:src="@mipmap/ic_launcher"
+                        android:contentDescription="Logo"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Lời chào -->
+                    <TextView
+                        android:id="@+id/tvWelcome"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chào mừng Admin!"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="24dp" />
+
+                    <!-- Một số thông tin thống kê sử dụng CardView -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="16dp">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="8dp"
+                            app:cardElevation="4dp"
+                            app:cardCornerRadius="8dp">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="16dp"
+                                android:gravity="center">
+                                <TextView
+                                    android:id="@+id/tvTotalProducts"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="100"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Sản phẩm" />
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="8dp"
+                            app:cardElevation="4dp"
+                            app:cardCornerRadius="8dp">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="16dp"
+                                android:gravity="center">
+                                <TextView
+                                    android:id="@+id/tvTotalOrders"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="50"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Đơn hàng" />
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
+                    </LinearLayout>
+
+                    <!-- Thêm thông báo hoặc các nội dung khác -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Thông báo nhanh"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Sản phẩm mới đã được cập nhật."
+                        android:layout_marginBottom="4dp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Đơn hàng số 12345 đã giao thành công."
+                        android:layout_marginBottom="4dp" />
+
+                    <!-- Nút truy cập nhanh (có thể mở rộng) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginTop="16dp">
+                        <Button
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Nhập hàng"
+                            android:layout_margin="8dp" />
+                        <Button
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Xuất hàng"
+                            android:layout_margin="8dp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </ScrollView>
         </FrameLayout>
     </LinearLayout>
 

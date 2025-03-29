@@ -32,6 +32,8 @@
         <activity android:name=".AdminActivity" android:exported="false" />
         <activity android:name=".UserActivity" android:exported="false" />
         <activity android:name=".UserManagementActivity" android:exported="false" />
+        <activity android:name=".InventoryManagementActivity" android:exported="false" />
+
 
     </application>
 </manifest>

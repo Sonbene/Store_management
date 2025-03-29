@@ -125,6 +125,10 @@ public class UserManagementActivity extends AppCompatActivity implements Navigat
             } else if (id == R.id.nav_in_out_stock) {
                 Toast.makeText(this, "Nhập/Xuất kho", Toast.LENGTH_SHORT).show();
                 // Xử lý chức năng nhập/xuất kho
+                Intent intent = new Intent(UserManagementActivity.this, InventoryManagementActivity.class);
+                intent.putExtra("adminName", adminName);
+                intent.putExtra("adminEmail", adminEmail);
+                startActivity(intent);
             } else if (id == R.id.nav_reports) {
                 Toast.makeText(this, "Báo cáo thống kê", Toast.LENGTH_SHORT).show();
                 // Xử lý chức năng báo cáo thống kê
