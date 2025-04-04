@@ -73,6 +73,10 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
             // Xử lý chức năng quản lý sản phẩm
         } else if (id == R.id.nav_manage_products) {
             Toast.makeText(this, "Quản lý sản phẩm", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(AdminActivity.this, ProductListActivity.class);
+            intent.putExtra("adminName", adminName);
+            intent.putExtra("adminEmail", adminEmail);
+            startActivity(intent);
             // Xử lý chức năng quản lý sản phẩm
         } else if (id == R.id.nav_inventory_management) {
             Toast.makeText(this, "Quản lý tồn kho", Toast.LENGTH_SHORT).show();

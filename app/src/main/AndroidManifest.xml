@@ -4,6 +4,9 @@
     package="com.example.storemanagement">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+
 
     <application
         android:allowBackup="true"
@@ -33,6 +36,9 @@
         <activity android:name=".UserActivity" android:exported="false" />
         <activity android:name=".UserManagementActivity" android:exported="false" />
         <activity android:name=".InventoryManagementActivity" android:exported="false" />
+        <activity android:name=".ProductListActivity" android:exported="false" />
+        <activity android:name=".QRScanActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
 
 
     </application>

@@ -29,11 +29,11 @@
             android:layout_height="match_parent"
             android:padding="16dp">
             <LinearLayout
+                android:id="@+id/parentLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center_horizontal">
-
                 <!-- RadioGroup chọn loại giao dịch -->
                 <RadioGroup
                     android:id="@+id/rgTransactionType"
@@ -169,9 +169,9 @@
                         android:id="@+id/etDonViTinh"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:minHeight="44dp"
                         android:hint="Đơn vị tính"
                         android:inputType="text"
+                        android:minHeight="44dp"
                         android:textColor="?attr/colorOnBackground"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -254,13 +254,13 @@
                     android:id="@+id/btnSubmit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Xác nhận giao dịch"
+                    android:layout_marginBottom="16dp"
                     android:backgroundTint="?attr/colorPrimary"
-                    android:textColor="?attr/colorOnPrimary"
                     android:padding="12dp"
+                    android:text="Xác nhận giao dịch"
+                    android:textColor="?attr/colorOnPrimary"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="16dp"/>
+                    android:textStyle="bold" />
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

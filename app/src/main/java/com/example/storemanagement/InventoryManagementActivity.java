@@ -1,11 +1,15 @@
 package com.example.storemanagement;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -52,6 +56,8 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
 
     private String adminName, adminEmail;
     private double basePrice = 0.0; // Giá cơ bản được lấy từ DB khi truy vấn theo ID
+
+    private static final int REQUEST_CODE_QR_SCAN = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +112,7 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
         etDonViTinh.setEnabled(true);
         etViTri.setEnabled(true);
 
-        // Khi chọn loại giao dịch thay đổi hint của trường số lượng
+        // Khi chọn loại giao dịch thay đổi
         rgTransactionType.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.rbExport) {
                 //etSoLuong.setHint("Số lượng xuất");
@@ -118,6 +124,7 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
                 etDonViTinh.setEnabled(false);
                 etViTri.setEnabled(false);
                 autoFillState = true;
+                clearAllFields();
             } else {
                 //etSoLuong.setHint("Số lượng nhập");
                 autoFillState = false;
@@ -130,6 +137,7 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
                 etViTri.setEnabled(true);
 
                 etID.setText("");
+                clearAllFields();
             }
         });
 
@@ -144,6 +152,14 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
                     }
 
                 }
+            }
+        });
+
+        // Thêm listener cho layout cha để clear focus khi bấm ra ngoài
+        findViewById(R.id.parentLayout).setOnClickListener(v -> {
+            // Nếu etID đang có focus, clear focus sẽ kích hoạt onFocusChangeListener
+            if (etID.isFocused()) {
+                etID.clearFocus();
             }
         });
 
@@ -177,6 +193,17 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
         // Thiết lập sự kiện cho nút xác nhận giao dịch
         findViewById(com.example.storemanagement.R.id.btnSubmit).setOnClickListener(v -> processTransaction());
     }
+
+    private void clearAllFields() {
+        etID.setText("");
+        etGiaTien.setText("");
+        etMakho.setText("");
+        etMaVatTu.setText("");
+        etTenVatTu.setText("");
+        etDonViTinh.setText("");
+        etViTri.setText("");
+    }
+
 
     /**
      * Xử lý giao dịch khi nút btnSubmit được bấm.
@@ -222,7 +249,7 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
             try {
                 double total = Double.parseDouble(totalPriceStr);
                 if (qty > 0) {
-                    unitPrice = total / qty;
+                    unitPrice = total;
                 }
             } catch (NumberFormatException e) {
                 // Giữ unitPrice là basePrice
@@ -315,7 +342,6 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
             }
         });
     }
-
 
     /**
      * Phương thức truy vấn DB để lấy thông tin sản phẩm theo ID và cập nhật các trường nhập liệu tương ứng.
@@ -416,11 +442,28 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
         return true;
     }
 
+
+    private ActivityResultLauncher<Intent> qrScanLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    String qrResult = result.getData().getStringExtra("QR_RESULT");
+                    etMaVatTu.setText(qrResult);
+
+                    //Toast.makeText(InventoryManagementActivity.this, "Kết quả QR: " + qrResult, Toast.LENGTH_LONG).show();
+
+                    //Xử lý kết quả quét QR
+                    //etID.setText(qrResult);
+                    //fetchProductInfoByID(qrResult);
+                }
+            }
+    );
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_scan_qr) {
-            Toast.makeText(this, "Quét QR", Toast.LENGTH_SHORT).show();
-            // Thêm logic quét QR tại đây
+            Intent intent = new Intent(this, QRScanActivity.class);
+            qrScanLauncher.launch(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -437,6 +480,11 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
             startActivity(intent);
         } else if (id == R.id.nav_manage_products) {
             Toast.makeText(this, "Quản lý sản phẩm", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Quản lý sản phẩm", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(InventoryManagementActivity.this, ProductListActivity.class);
+            intent.putExtra("adminName", adminName);
+            intent.putExtra("adminEmail", adminEmail);
+            startActivity(intent);
         } else if (id == R.id.nav_inventory_management) {
             Toast.makeText(this, "Quản lý tồn kho", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_in_out_stock) {
