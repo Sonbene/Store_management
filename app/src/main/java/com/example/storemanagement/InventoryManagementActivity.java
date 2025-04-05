@@ -182,6 +182,33 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
             }
         });
 
+        // Trong onCreate(), sau khi khởi tạo etID
+        etID.setOnClickListener(v -> {
+            if (rbExport.isChecked()) {
+                // Khi chọn xuất, hiển thị danh sách ID gợi ý từ DB (không lọc ban đầu)
+                fetchIdSuggestions("");
+            } else {
+                // Khi nhập hàng, tự động lấy ID lớn nhất và +1
+                fetchMaxId();
+            }
+        });
+
+// Nếu rbExport được chọn, khi người dùng nhập vào etID thì lọc danh sách ID
+        etID.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (rbExport.isChecked()) {
+                    String filter = s.toString().trim();
+                    fetchIdSuggestions(filter);
+                }
+            }
+        });
+
+
         // Thiết lập gợi ý cho các trường nhập liệu (truy vấn thực tế)
         fetchSuggestions("Makho", etMakho);
         fetchSuggestions("MaVatTu", etMaVatTu);
@@ -202,6 +229,86 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
         etTenVatTu.setText("");
         etDonViTinh.setText("");
         etViTri.setText("");
+    }
+
+    private void fetchIdSuggestions(final String filter) {
+        executorService.execute(() -> {
+            Connection connection = null;
+            PreparedStatement stmt = null;
+            ResultSet rs = null;
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+                connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+
+                // Nếu filter không rỗng, thêm điều kiện LIKE để lọc
+                String sql = "SELECT ID FROM quanlykho_data";
+                if (!filter.isEmpty()) {
+                    sql += " WHERE ID LIKE ?";
+                }
+                stmt = connection.prepareStatement(sql);
+                if (!filter.isEmpty()) {
+                    stmt.setString(1, "%" + filter + "%");
+                }
+                rs = stmt.executeQuery();
+                final ArrayList<String> suggestions = new ArrayList<>();
+                while (rs.next()) {
+                    String id = rs.getString("ID");
+                    if (id != null && !suggestions.contains(id)) {
+                        suggestions.add(id);
+                    }
+                }
+                runOnUiThread(() -> {
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(InventoryManagementActivity.this,
+                            android.R.layout.simple_dropdown_item_1line, suggestions);
+                    etID.setAdapter(adapter);
+                    etID.showDropDown();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (rs != null) rs.close();
+                    if (stmt != null) stmt.close();
+                    if (connection != null) connection.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+    }
+
+
+    private void fetchMaxId() {
+        executorService.execute(() -> {
+            Connection connection = null;
+            PreparedStatement stmt = null;
+            ResultSet rs = null;
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+                connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                // Giả sử cột ID có kiểu số, dùng CAST để đảm bảo so sánh số học
+                String sql = "SELECT MAX(CAST(ID AS UNSIGNED)) AS maxID FROM quanlykho_data";
+                stmt = connection.prepareStatement(sql);
+                rs = stmt.executeQuery();
+                int newId = 1;
+                if (rs.next()) {
+                    int maxId = rs.getInt("maxID");
+                    newId = maxId + 1;
+                }
+                final int finalNewId = newId;
+                runOnUiThread(() -> etID.setText(String.valueOf(finalNewId)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (rs != null) rs.close();
+                    if (stmt != null) stmt.close();
+                    if (connection != null) connection.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
     }
 
 
