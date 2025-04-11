@@ -245,6 +245,13 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
             Toast.makeText(this, "Đã đăng xuất", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(ProductListActivity.this, LoginActivity.class);
             startActivity(intent);
+        }else if (id == R.id.nav_invoice) {
+            Toast.makeText(this, "Hóa đơn bán hàng", Toast.LENGTH_SHORT).show();
+            // Chuyển sang giao diện quản lý người dùng và truyền thông tin admin
+            Intent intent = new Intent(ProductListActivity.this, BillPrintActivity.class);
+            intent.putExtra("adminName", adminName);
+            intent.putExtra("adminEmail", adminEmail);
+            startActivity(intent);
         }
         drawerLayout.closeDrawers();
         return true;

@@ -28,7 +28,7 @@ import java.util.Locale;
 public class BillPrintActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_SCAN_BARCODE = 101;
-    // Thông tin kết nối MariaDB lấy từ InventoryManagementActivity.java
+    // Thông tin kết nối MariaDB
     private static final String DB_URL = "jdbc:mysql://pvl.vn:3306/admin_db?useUnicode=true&characterEncoding=utf8";
     private static final String DB_USER = "raspberry";
     private static final String DB_PASSWORD = "admin6789@";
@@ -58,7 +58,8 @@ public class BillPrintActivity extends AppCompatActivity {
             }
         });
 
-        // Cập nhật dữ liệu mặc định của hóa đơn theo ngày hôm nay.
+        // Cập nhật dữ liệu mặc định của hóa đơn theo ngày hôm nay:
+        // Số hóa đơn tạo theo thời gian hiện tại để đảm bảo tính duy nhất.
         Date now = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         SimpleDateFormat billNoFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
@@ -67,7 +68,7 @@ public class BillPrintActivity extends AppCompatActivity {
         tvBillNumber.setText(billNo);
         tvDate.setText("Ngày: " + currentDate);
 
-        // Nếu có sản phẩm ban đầu, bạn có thể thêm dòng sản phẩm vào hóa đơn
+        // Nếu có sản phẩm ban đầu, bạn có thể thêm dòng sản phẩm vào hóa đơn (ví dụ cách dưới đây).
         // Ví dụ: addProductRow("VT001", "Sản phẩm A", 10, 100000);
     }
 
@@ -105,7 +106,7 @@ public class BillPrintActivity extends AppCompatActivity {
         productTable.addView(row);
     }
 
-    // Khi bấm nút Quét Barcode, chuyển sang InvoiceActivity
+    // Khi bấm nút Quét Barcode, chuyển sang InvoiceActivity để quét
     public void onScanBarcode(View view) {
         Intent intent = new Intent(this, InvoiceActivity.class);
         startActivityForResult(intent, REQUEST_CODE_SCAN_BARCODE);
@@ -117,22 +118,27 @@ public class BillPrintActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_SCAN_BARCODE && resultCode == RESULT_OK && data != null) {
             final String scannedProductCode = data.getStringExtra("QR_RESULT");
             // Tra cứu sản phẩm từ MariaDB theo mã vật tư quét được (chạy ở background thread)
-            new Thread(() -> {
-                final Product product = lookupProduct(scannedProductCode);
-                runOnUiThread(() -> {
-                    if (product == null) {
-                        Toast.makeText(BillPrintActivity.this, "Không tìm thấy sản phẩm với mã " + scannedProductCode, Toast.LENGTH_SHORT).show();
-                    } else {
-                        // Nếu tìm thấy, cập nhật hóa đơn
-                        updateInvoiceWithProduct(product);
-                    }
-                });
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    final Product product = lookupProduct(scannedProductCode);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (product == null) {
+                                Toast.makeText(BillPrintActivity.this, "Không tìm thấy sản phẩm với mã " + scannedProductCode, Toast.LENGTH_SHORT).show();
+                            } else {
+                                updateInvoiceWithProduct(product);
+                            }
+                        }
+                    });
+                }
             }).start();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    // Phương thức cập nhật hóa đơn với thông tin sản phẩm tra cứu được
+    // Cập nhật hóa đơn với thông tin sản phẩm tra cứu được
     private void updateInvoiceWithProduct(Product product) {
         boolean found = false;
         int rowCount = productTable.getChildCount();
@@ -143,25 +149,32 @@ public class BillPrintActivity extends AppCompatActivity {
             if (tvCode.getText().toString().equals(product.code)) {
                 found = true;
                 TextView tvQuantity = (TextView) row.getChildAt(2);
-                int quantity = Integer.parseInt(tvQuantity.getText().toString());
-                quantity++;
-                tvQuantity.setText(String.valueOf(quantity));
-
-                // Cập nhật "Thành tiền" dựa trên đơn giá và số lượng
-                TextView tvThanhTien = (TextView) row.getChildAt(4);
-                int newThanhTien = quantity * product.unitPrice;
-                tvThanhTien.setText(String.valueOf(newThanhTien));
+                int invoiceQuantity = Integer.parseInt(tvQuantity.getText().toString());
+                // Nếu số lượng trên hóa đơn đã bằng số lượng tồn kho, không cho thêm nữa
+                if (invoiceQuantity >= product.availableQuantity) {
+                    Toast.makeText(BillPrintActivity.this, "Sản phẩm " + product.code + " đã đạt giới hạn tồn kho (" + product.availableQuantity + ")", Toast.LENGTH_SHORT).show();
+                } else {
+                    invoiceQuantity++;
+                    tvQuantity.setText(String.valueOf(invoiceQuantity));
+                    TextView tvThanhTien = (TextView) row.getChildAt(4);
+                    int newThanhTien = invoiceQuantity * product.unitPrice;
+                    tvThanhTien.setText(String.valueOf(newThanhTien));
+                }
                 break;
             }
         }
         if (!found) {
-            // Nếu sản phẩm chưa có trong hóa đơn, thêm dòng mới
-            addProductRow(product.code, product.name, 1, product.unitPrice);
+            // Nếu sản phẩm chưa có, chỉ thêm nếu còn hàng
+            if (product.availableQuantity > 0) {
+                addProductRow(product.code, product.name, 1, product.unitPrice);
+            } else {
+                Toast.makeText(BillPrintActivity.this, "Sản phẩm " + product.code + " không còn hàng", Toast.LENGTH_SHORT).show();
+            }
         }
         recalcTotalAmount();
     }
 
-    // Hàm tính lại tổng số tiền hóa đơn dựa trên cột "Thành tiền" của từng dòng sản phẩm
+    // Tính lại tổng số tiền của hóa đơn
     private void recalcTotalAmount() {
         int total = 0;
         int rowCount = productTable.getChildCount();
@@ -173,18 +186,16 @@ public class BillPrintActivity extends AppCompatActivity {
         tvTotalAmount.setText("Tổng cộng: " + total);
     }
 
-    // Hàm tra cứu sản phẩm trong MariaDB dựa trên mã vật tư
+    // Tra cứu sản phẩm trong MariaDB dựa trên mã vật tư, lấy thông tin và số lượng tồn kho (SoLuongNhap)
     private Product lookupProduct(String productCode) {
         Product product = null;
         Connection connection = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
-            // Khởi tạo driver
             Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            // Giả sử thông tin sản phẩm cần lấy gồm: MaVatTu, TenVatTu, GiaTien
-            String sql = "SELECT MaVatTu, TenVatTu, GiaTien FROM quanlykho_data WHERE MaVatTu = ?";
+            String sql = "SELECT MaVatTu, TenVatTu, GiaTien, SoLuongNhap FROM quanlykho_data WHERE MaVatTu = ?";
             stmt = connection.prepareStatement(sql);
             stmt.setString(1, productCode);
             rs = stmt.executeQuery();
@@ -192,7 +203,8 @@ public class BillPrintActivity extends AppCompatActivity {
                 String code = rs.getString("MaVatTu");
                 String name = rs.getString("TenVatTu");
                 int unitPrice = rs.getInt("GiaTien");
-                product = new Product(code, name, unitPrice);
+                int availableQuantity = rs.getInt("SoLuongNhap");
+                product = new Product(code, name, unitPrice, availableQuantity);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -208,49 +220,168 @@ public class BillPrintActivity extends AppCompatActivity {
         return product;
     }
 
-    // Lớp mô phỏng thông tin sản phẩm
+    // Lớp Product có thêm thuộc tính availableQuantity
     private static class Product {
         String code;
         String name;
         int unitPrice;
+        int availableQuantity;
 
-        Product(String code, String name, int unitPrice) {
+        Product(String code, String name, int unitPrice, int availableQuantity) {
             this.code = code;
             this.name = name;
             this.unitPrice = unitPrice;
+            this.availableQuantity = availableQuantity;
         }
     }
 
-    // Phương thức in hóa đơn: ẩn các thành phần không cần thiết (như nút bấm) trước khi in
+    // Khi in hóa đơn (PDF icon được chọn), sau in sẽ giảm số lượng sản phẩm đó trong MariaDB
+    // Sau khi ẩn các view không cần in, in hóa đơn và cập nhật số lượng tồn kho.
+//    private void printBill() {
+//        final View content = findViewById(R.id.billPrintContainer);
+//        final View barcodeSection = findViewById(R.id.barcodeScanningSection);
+//        final View btnPrintView = findViewById(R.id.btnPrint);
+//
+//        final int oldBarcodeVisibility = barcodeSection.getVisibility();
+//        final int oldPrintVisibility = btnPrintView.getVisibility();
+//
+//        barcodeSection.setVisibility(View.GONE);
+//        btnPrintView.setVisibility(View.GONE);
+//
+//        content.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
+//                PrintDocumentAdapter printAdapter = new ViewPrintAdapter(BillPrintActivity.this, content);
+//                String jobName = getString(R.string.app_name) + " Hóa Đơn";
+//                printManager.print(jobName, printAdapter, new PrintAttributes.Builder().build());
+//
+//                // Sau khi gọi in, cập nhật số lượng tồn kho trong MariaDB
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        updateDatabaseAfterPrint();
+//                    }
+//                }).start();
+//
+//                barcodeSection.setVisibility(oldBarcodeVisibility);
+//                btnPrintView.setVisibility(oldPrintVisibility);
+//            }
+//        }, 300);
+//    }
+
+
     private void printBill() {
-        // Lấy view chứa hóa đơn (toàn bộ ScrollView)
-        final View content = findViewById(R.id.billPrintContainer);
-        // Các view cần ẩn: phần quét barcode và nút in
-        final View barcodeSection = findViewById(R.id.barcodeScanningSection);
-        final View btnPrintView = findViewById(R.id.btnPrint);
+        try {
+            // Inflate layout dùng riêng cho in (chỉ chứa bảng hóa đơn)
+            View printView = getLayoutInflater().inflate(R.layout.invoice_print_only, null);
 
-        // Lưu trạng thái ban đầu
-        final int oldBarcodeVisibility = barcodeSection.getVisibility();
-        final int oldPrintVisibility = btnPrintView.getVisibility();
+            // Lấy và cập nhật dữ liệu từ giao diện hiện tại
+            TextView tvBillTitlePrint = printView.findViewById(R.id.tvBillTitlePrint);
+            TextView tvBillNumberPrint = printView.findViewById(R.id.tvBillNumberPrint);
+            TextView tvDatePrint = printView.findViewById(R.id.tvDatePrint);
+            TableLayout productTablePrint = printView.findViewById(R.id.productTablePrint);
+            TextView tvTotalAmountPrint = printView.findViewById(R.id.tvTotalAmountPrint);
 
-        // Ẩn các view không cần in
-        barcodeSection.setVisibility(View.GONE);
-        btnPrintView.setVisibility(View.GONE);
+            tvBillTitlePrint.setText(tvBillTitle.getText());
+            tvBillNumberPrint.setText(tvBillNumber.getText());
+            tvDatePrint.setText(tvDate.getText());
+            tvTotalAmountPrint.setText(tvTotalAmount.getText());
 
-        // Yêu cầu layout cập nhật và chờ 300ms (có thể điều chỉnh)
-        content.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
-                PrintDocumentAdapter printAdapter = new ViewPrintAdapter(BillPrintActivity.this, content);
-                String jobName = getString(R.string.app_name) + " Hóa Đơn";
-                printManager.print(jobName, printAdapter, new PrintAttributes.Builder().build());
-
-                // Khôi phục lại các view sau khi in (nếu có thể đảm bảo sau khi snapshot được lấy)
-                barcodeSection.setVisibility(oldBarcodeVisibility);
-                btnPrintView.setVisibility(oldPrintVisibility);
+            // Sao chép các dòng sản phẩm từ productTable sang productTablePrint
+            int rowCount = productTable.getChildCount();
+            for (int i = 0; i < rowCount; i++) {
+                View row = productTable.getChildAt(i);
+                if (row instanceof TableRow) {
+                    TableRow newRow = new TableRow(this);
+                    newRow.setLayoutParams(row.getLayoutParams());
+                    TableRow originalRow = (TableRow) row;
+                    int colCount = originalRow.getChildCount();
+                    for (int j = 0; j < colCount; j++) {
+                        TextView originalTv = (TextView) originalRow.getChildAt(j);
+                        TextView newTv = new TextView(this);
+                        newTv.setLayoutParams(originalTv.getLayoutParams());
+                        newTv.setPadding(
+                                originalTv.getPaddingLeft(),
+                                originalTv.getPaddingTop(),
+                                originalTv.getPaddingRight(),
+                                originalTv.getPaddingBottom()
+                        );
+                        newTv.setText(originalTv.getText());
+                        newRow.addView(newTv);
+                    }
+                    productTablePrint.addView(newRow);
+                }
             }
-        }, 300);  // delay 300ms
+
+            // Ép view được in đo và layout trước khi in
+            // Lấy chiều rộng của thiết bị nếu width của printView bằng 0
+            int width = printView.getWidth();
+            if (width <= 0) {
+                width = getResources().getDisplayMetrics().widthPixels;
+            }
+            printView.measure(
+                    View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+            printView.layout(0, 0, printView.getMeasuredWidth(), printView.getMeasuredHeight());
+
+            // Gọi PrintManager để in
+            PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
+            PrintDocumentAdapter printAdapter = new ViewPrintAdapter(this, printView);
+            String jobName = getString(R.string.app_name) + " Hóa Đơn";
+            printManager.print(jobName, printAdapter, new PrintAttributes.Builder().build());
+
+            // Nếu có cần cập nhật DB sau in thì chạy đoạn code update ở đây...
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Lỗi khi in hóa đơn: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
+    // Duyệt qua từng sản phẩm trong hóa đơn và giảm số lượng tồn kho ở MariaDB
+    private void updateDatabaseAfterPrint() {
+        int rowCount = productTable.getChildCount();
+        for (int i = 1; i < rowCount; i++) {
+            TableRow row = (TableRow) productTable.getChildAt(i);
+            TextView tvCode = (TextView) row.getChildAt(0);
+            TextView tvQuantity = (TextView) row.getChildAt(2);
+            String productCode = tvCode.getText().toString();
+            int printedQuantity = Integer.parseInt(tvQuantity.getText().toString());
+            updateProductQuantityInDB(productCode, printedQuantity);
+        }
+    }
+
+    // Hàm cập nhật DB: trừ số lượng đã in từ SoLuongNhap nếu tồn kho đủ
+    private void updateProductQuantityInDB(String productCode, int printedQuantity) {
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            String sql = "UPDATE quanlykho_data SET SoLuongNhap = SoLuongNhap - ? WHERE MaVatTu = ? AND SoLuongNhap >= ?";
+            stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, printedQuantity);
+            stmt.setString(2, productCode);
+            stmt.setInt(3, printedQuantity);
+            int rows = stmt.executeUpdate();
+            if (rows <= 0) {
+                runOnUiThread(() -> Toast.makeText(BillPrintActivity.this, "Cập nhật DB thất bại cho sản phẩm " + productCode, Toast.LENGTH_SHORT).show());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (stmt != null)
+                    stmt.close();
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
 }

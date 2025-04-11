@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/printContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:id="@+id/invoiceContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Tiêu đề hóa đơn -->
+        <TextView
+            android:id="@+id/tvBillTitlePrint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HÓA ĐƠN XUẤT HÀNG"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="8dp" />
+
+        <!-- Số hóa đơn và ngày -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvBillNumberPrint"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Bill No: 001" />
+
+            <TextView
+                android:id="@+id/tvDatePrint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ngày: 01/01/2025" />
+        </LinearLayout>
+
+        <!-- Thông tin sản phẩm xuất -->
+        <TextView
+            android:id="@+id/tvProductHeaderPrint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Thông tin sản phẩm:"
+            android:textStyle="bold"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp" />
+
+        <!-- Bảng thông tin sản phẩm -->
+        <TableLayout
+            android:id="@+id/productTablePrint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="*"
+            android:paddingBottom="8dp">
+
+            <!-- Tiêu đề cột -->
+            <TableRow>
+                <TextView
+                    android:layout_margin="4dp"
+                    android:text="Mã VT"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_margin="4dp"
+                    android:text="Tên VT"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_margin="4dp"
+                    android:text="SL"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_margin="4dp"
+                    android:text="Đơn giá"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_margin="4dp"
+                    android:text="Thành tiền"
+                    android:textStyle="bold" />
+            </TableRow>
+            <!-- Các dòng sản phẩm sẽ được thêm động -->
+        </TableLayout>
+
+        <!-- Tổng tiền -->
+        <TextView
+            android:id="@+id/tvTotalAmountPrint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
+            android:text="Tổng cộng: 0"
+            android:textStyle="bold" />
+    </LinearLayout>
+</ScrollView>

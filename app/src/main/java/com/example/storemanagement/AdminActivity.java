@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +23,8 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     private Toolbar toolbar;
     private String adminName, adminEmail;
 
+    private Button btnNhap, btnXuat;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,6 +32,9 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        btnNhap = findViewById(R.id.btnNhap);
+        btnXuat = findViewById(R.id.btnXuat);
 
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.navigation_view);
@@ -59,6 +65,31 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         TextView tvAdminEmail = headerView.findViewById(R.id.tvAdminEmail);
         tvAdminName.setText(adminName);
         tvAdminEmail.setText(adminEmail);
+
+        btnNhap.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+
+                // Xử lý chức năng nhập/xuất kho
+                Intent intent = new Intent(AdminActivity.this, InventoryManagementActivity.class);
+                intent.putExtra("adminName", adminName);
+                intent.putExtra("adminEmail", adminEmail);
+                startActivity(intent);
+            }
+        });
+
+        btnXuat.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+
+                // Chuyển sang giao diện quản lý người dùng và truyền thông tin admin
+                Intent intent = new Intent(AdminActivity.this, BillPrintActivity.class);
+                intent.putExtra("adminName", adminName);
+                intent.putExtra("adminEmail", adminEmail);
+                startActivity(intent);
+            }
+        });
+
     }
 
     @Override

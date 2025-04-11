@@ -150,6 +150,13 @@ public class UserManagementActivity extends AppCompatActivity implements Navigat
                 intent.putExtra("adminName", adminName);
                 intent.putExtra("adminEmail", adminEmail);
                 startActivity(intent);
+            }else if (id == R.id.nav_invoice) {
+                Toast.makeText(this, "Hóa đơn bán hàng", Toast.LENGTH_SHORT).show();
+                // Chuyển sang giao diện quản lý người dùng và truyền thông tin admin
+                Intent intent = new Intent(UserManagementActivity.this, BillPrintActivity.class);
+                intent.putExtra("adminName", adminName);
+                intent.putExtra("adminEmail", adminEmail);
+                startActivity(intent);
             }
         drawerLayout.closeDrawers();
         return true;
