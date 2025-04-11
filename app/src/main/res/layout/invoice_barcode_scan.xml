@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scanner_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- BarcodeView hiển thị preview camera để quét barcode -->
+    <com.journeyapps.barcodescanner.BarcodeView
+        android:id="@+id/barcode_scanner"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Overlay hiển thị các hướng dẫn và khung quét -->
+    <RelativeLayout
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent">
+
+        <!-- Khung quét barcode (bạn có thể thêm drawable nếu cần) -->
+        <View
+            android:id="@+id/scanner_frame"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:layout_centerInParent="true" />
+
+        <!-- TextView hiển thị hướng dẫn cho người dùng -->
+        <TextView
+            android:id="@+id/tvScanInstruction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hướng camera vào mã vạch"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="32dp" />
+
+        <!-- Nút hủy/quay lại -->
+        <Button
+            android:id="@+id/btnCancelScan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hủy"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="16dp" />
+    </RelativeLayout>
+</FrameLayout>

@@ -150,7 +150,6 @@ public class InventoryManagementActivity extends AppCompatActivity implements Na
                     {
                         fetchProductInfoByID(idText);
                     }
-
                 }
             }
         });

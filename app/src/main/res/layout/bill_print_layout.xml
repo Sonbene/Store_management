@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/billPrintContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:id="@+id/containerBill"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Tiêu đề hóa đơn -->
+        <TextView
+            android:id="@+id/tvBillTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HÓA ĐƠN XUẤT HÀNG"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="8dp" />
+
+        <!-- Số hóa đơn và ngày -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvBillNumber"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Bill No: 001" />
+
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ngày: 01/01/2025" />
+        </LinearLayout>
+
+        <!-- Thông tin sản phẩm xuất -->
+        <TextView
+            android:id="@+id/tvProductHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Thông tin sản phẩm:"
+            android:textStyle="bold"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp" />
+
+        <!-- Bảng thông tin sản phẩm -->
+        <TableLayout
+            android:id="@+id/productTable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="*"
+            android:paddingBottom="8dp">
+
+            <!-- Tiêu đề cột -->
+            <TableRow>
+                <TextView
+                    android:layout_margin="4dp"
+                    android:text="Mã VT"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_margin="4dp"
+                    android:text="Tên VT"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_margin="4dp"
+                    android:text="SL"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_margin="4dp"
+                    android:text="Đơn giá"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_margin="4dp"
+                    android:text="Thành tiền"
+                    android:textStyle="bold" />
+            </TableRow>
+            <!-- Dòng dữ liệu sản phẩm ban đầu (nếu có) sẽ được thêm động từ code -->
+        </TableLayout>
+
+
+        <!-- Tổng tiền -->
+        <TextView
+            android:id="@+id/tvTotalAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
+            android:text="Tổng cộng: 0"
+            android:textStyle="bold" />
+
+        <!-- Phần quét barcode -->
+        <LinearLayout
+            android:id="@+id/barcodeScanningSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:id="@+id/tvScanPrompt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quét Barcode để cập nhật sản phẩm"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingBottom="8dp" />
+
+            <!-- Nút kích hoạt quét barcode; thuộc tính onClick sẽ gọi hàm xử lý quét barcode -->
+            <Button
+                android:id="@+id/btnScanBarcode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quét Barcode"
+                android:soundEffectsEnabled="true"
+                android:onClick="onScanBarcode" />
+        </LinearLayout>
+
+        <!-- Nút in hóa đơn -->
+        <Button
+            android:id="@+id/btnPrint"
+            android:layout_width="match_parent"
+            android:layout_height="81dp"
+            android:text="In Hóa Đơn" />
+
+    </LinearLayout>
+</ScrollView>

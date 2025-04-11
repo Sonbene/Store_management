@@ -39,6 +39,8 @@
         <activity android:name=".ProductListActivity" android:exported="false" />
         <activity android:name=".QRScanActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:name=".BillPrintActivity"/>
+        <activity android:name=".InvoiceActivity"/>
 
 
     </application>
